@@ -7,40 +7,55 @@ using System.Net;
 using System.Net.Http;
 using System.Web.Http;
 using Dapper;
+using OurFirstApi.DataAccess;
 using OurFirstApi.Models;
 
 namespace OurFirstApi.Controllers
 {
     //api/employees
+    [RoutePrefix("api/employee")]
     public class EmployeesController : ApiController
     {
         //api/employees
         public HttpResponseMessage Get()
         {
-            using (var connection =
-                new SqlConnection(ConfigurationManager.ConnectionStrings["Chinook"].ConnectionString))
+            try
             {
-                try
-                {
-                    connection.Open();
+                var employeeData = new EmployeeDataAccess();
+                var employees = employeeData.GetAll();
 
-                    var result = connection.Query<EmployeeListResult>("select * " +
-                                                                      "from Employee");
-
-
-                    return Request.CreateResponse(HttpStatusCode.OK, result);
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine(ex.Message);
-                    Console.WriteLine(ex.StackTrace);
-                    return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, "Query blew up");
-                }
+                return Request.CreateResponse(HttpStatusCode.OK, employees);
+            }
+            catch (Exception)
+            {
+                return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, "Query blew up");
             }
         }
 
         //api/employees/3000
+        [HttpGet, Route("{id}")]
         public HttpResponseMessage Get(int id)
+        {
+            try
+            {
+                var repo = new FakeEmployeeDataAccess();
+                var result = repo.Get(id);
+
+                if (result == null)
+                {
+                    return Request.CreateErrorResponse(HttpStatusCode.NotFound, "Couldn't find that employee");
+                }
+
+                return Request.CreateResponse(HttpStatusCode.OK, result);
+            }
+            catch (Exception ex)
+            {
+                return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, ex);
+            }
+        }
+
+        [HttpGet, Route("name/{firstName}")]
+        public HttpResponseMessage Get(string firstName)
         {
             using (var connection =
                 new SqlConnection(ConfigurationManager.ConnectionStrings["Chinook"].ConnectionString))
@@ -50,12 +65,12 @@ namespace OurFirstApi.Controllers
                     connection.Open();
 
                     var result =
-                        connection.Query<EmployeeListResult>("Select * From Employee where EmployeeId = @id",
-                            new {id = id}).FirstOrDefault();
+                        connection.Query<EmployeeListResult>("Select * From Employee where FirstName = @firstname",
+                            new { firstName }).FirstOrDefault();
 
                     if (result == null)
                     {
-                        return Request.CreateErrorResponse(HttpStatusCode.NotFound,$"Employee with the Id {id} was not found");
+                        return Request.CreateErrorResponse(HttpStatusCode.NotFound, $"Employee with the Name {firstName} was not found");
                     }
 
                     return Request.CreateResponse(HttpStatusCode.OK, result);
@@ -66,5 +81,6 @@ namespace OurFirstApi.Controllers
                 }
             }
         }
+
     }
 }

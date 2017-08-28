@@ -7,22 +7,26 @@ using OurFirstApi.Models;
 
 namespace OurFirstApi.Controllers
 {
+    [RoutePrefix("otherapi/zalues")]
     public class ValuesController : ApiController
     {
         // GET api/values
-        public IEnumerable<string> Get()
+        [HttpGet, Route("all")]
+        public IEnumerable<string> GetAllValues()
         {
             return new string[] { "value1", "value2" };
         }
 
         // GET api/values/5
-        public string Get(int randomNumber)
+        [HttpGet, Route("{randomNumber}")]
+        public int Get(int randomNumber)
         {
-            return "value";
+            return randomNumber;
         }
 
         // POST api/values
-        public HttpResponseMessage Post(EmployeeListResult employee)
+        [HttpPost,Route("")]
+        public HttpResponseMessage AddEmployee(EmployeeListResult employee)
         {
             Console.WriteLine($"{employee.FirstName} {employee.LastName}");
 
@@ -30,7 +34,8 @@ namespace OurFirstApi.Controllers
         }
 
         // PUT api/values/5
-        public HttpResponseMessage Put(int id, EmployeeListResult employee)
+        [HttpPut, Route("{id}")]
+        public HttpResponseMessage UpdateEmployee(int id, EmployeeListResult employee)
         {
             Console.WriteLine($"{employee.FirstName} {employee.LastName}");
 
@@ -38,7 +43,8 @@ namespace OurFirstApi.Controllers
         }
 
         // DELETE api/values/5
-        public void Delete(int id)
+        [HttpDelete, Route("{id}")]
+        public void DeleteEmployee(int id)
         {
         }
     }
