@@ -38,7 +38,7 @@ namespace OurFirstApi.Controllers
         {
             try
             {
-                var repo = new FakeEmployeeDataAccess();
+                var repo = new EmployeeDataAccess();
                 var result = repo.Get(id);
 
                 if (result == null)
@@ -62,18 +62,12 @@ namespace OurFirstApi.Controllers
             {
                 try
                 {
-                    connection.Open();
 
-                    var result =
-                        connection.Query<EmployeeListResult>("Select * From Employee where FirstName = @firstname",
-                            new { firstName }).FirstOrDefault();
-
-                    if (result == null)
-                    {
-                        return Request.CreateErrorResponse(HttpStatusCode.NotFound, $"Employee with the Name {firstName} was not found");
-                    }
+                    var employeeByName = new EmployeeDataAccess();
+                    var result = employeeByName.Get(firstName);
 
                     return Request.CreateResponse(HttpStatusCode.OK, result);
+
                 }
                 catch (Exception ex)
                 {
